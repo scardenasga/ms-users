@@ -1,6 +1,7 @@
 package co.edu.unbosque.model;
 
 import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -45,8 +46,8 @@ public class Usuario {
 	    @Column(name = "contrasena", length = 255, nullable = false)
 	    private String contrasena;
 	    
-	    @Column(name = "estado", columnDefinition = "VARCHAR(20) DEFAULT 'ACTIVO'", nullable = false)
-	    private String estado;
+	    @Column(name = "estado", columnDefinition = "DEFAULT 'ACTIVO'", nullable = false)
+	    private String estado= "ACTIVO";
 	    
 	    @Column(name = "fecha_registro", nullable = false)
 	    private LocalDateTime fechaRegistro;
