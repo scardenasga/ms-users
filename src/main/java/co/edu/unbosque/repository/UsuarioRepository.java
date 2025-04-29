@@ -4,9 +4,10 @@ import co.edu.unbosque.model.Usuario;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+public interface UsuarioRepository extends JpaRepository<Usuario, String> {
 
     public boolean existsByEmail(String email);
     
     public Usuario findByEmail(String email);
+    public void deleteByEmail(String email);
 }

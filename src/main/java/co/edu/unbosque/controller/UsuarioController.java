@@ -2,15 +2,19 @@ package co.edu.unbosque.controller;
 
 
 import co.edu.unbosque.model.UsuarioDTO;
+
+
+
 import co.edu.unbosque.service.EmailService;
 import co.edu.unbosque.service.UsuarioService;
-import io.swagger.v3.oas.annotations.Parameter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 @RestController
@@ -63,12 +67,13 @@ public class UsuarioController {
 	public ResponseEntity<String> eliminarUsuario(
 			@PathVariable String email) {
 
-		int status = userServ.eliminarCuenta(email);
-		if (status == 0) {
+		try {
+			userServ.eliminarCuenta(email);
 			return new ResponseEntity<>("Eliminado exitosamente", HttpStatus.ACCEPTED);
-		} else {
-			return new ResponseEntity<>("Error al eliminar el vehículo", HttpStatus.NOT_FOUND);
+		} catch (EntityNotFoundException ex) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
 		}
+		
 	}
 
 

@@ -1,11 +1,13 @@
 package co.edu.unbosque.service;
 
-import co.edu.unbosque.model.ComisionistaUsuario;
+
 import co.edu.unbosque.model.Usuario;
+
+
 import co.edu.unbosque.model.UsuarioDTO;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import co.edu.unbosque.repository.ComisionistaUsuarioRepository;
+import jakarta.persistence.EntityNotFoundException;
 import co.edu.unbosque.repository.UsuarioRepository;
 
 import java.util.Date;
@@ -21,9 +23,6 @@ public class UsuarioService {
 
 	@Autowired
 	public UsuarioRepository userRepo;
-	
-	@Autowired
-	public ComisionistaUsuarioRepository comUserRepo;
 
 	private Map<String, String> codigosPorCorreo;
 
@@ -67,21 +66,13 @@ public class UsuarioService {
 				.signWith(SignatureAlgorithm.HS512, SECRET_KEY).compact();
 	}
 	
-	public int eliminarCuenta(String correo) {
-		Usuario usuario = userRepo.findByEmail(correo);
-		if (usuario == null) {
-			System.out.println("Usuario no encontrado.");
-			return -1;
-		}
-		try {
-			ComisionistaUsuario comUser = comUserRepo.findByIdUsuario(usuario);
-			comUserRepo.delete(comUser);
-		}catch (Exception e) {
-			e.printStackTrace();
-			return -1;
-		}
-
-		return 0;
-		
+	
+	public void eliminarCuenta(String email) {
+	    Usuario usuario = userRepo.findByEmail(email);
+	    if (usuario != null) {
+	        userRepo.delete(usuario); 
+	    } else {
+	        throw new EntityNotFoundException("El usuario con email " + email + " no existe.");
+	    }
 	}
 }
