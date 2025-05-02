@@ -1,7 +1,8 @@
-package co.edu.unbosque.ms_users.model;
+package co.edu.unbosque.ms_users.model.entity;
 
 import java.io.Serializable;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,10 +14,11 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -28,6 +30,8 @@ import java.util.List;
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @NamedQuery(name = "Usuario.findAll", query = "SELECT u FROM Usuario u")
 public class Usuario implements Serializable {
@@ -72,7 +76,7 @@ public class Usuario implements Serializable {
 	private Rol rol;
 
 	// bi-directional one-to-one association to Configuracion
-	@OneToOne(mappedBy = "usuario")
+	@OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
 	private Configuracion configuracion;
 
 	// bi-directional many-to-many association to Usuario
@@ -88,8 +92,7 @@ public class Usuario implements Serializable {
 	@ManyToMany(mappedBy = "usuarios1", fetch = FetchType.LAZY)
 	private List<Usuario> usuarios2;
 
-	// bi-directional many-to-one association to UsuarioSuscripcion
-	@OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
-	private List<UsuarioSuscripcion> usuarioSuscripcions;
+	@OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private UsuarioSuscripcion suscripcion;
 
 }

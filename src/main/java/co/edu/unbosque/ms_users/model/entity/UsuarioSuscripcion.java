@@ -1,20 +1,22 @@
-package co.edu.unbosque.ms_users.model;
+package co.edu.unbosque.ms_users.model.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 /**
@@ -23,14 +25,19 @@ import lombok.Data;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name="usuario_suscripcion")
 @NamedQuery(name="UsuarioSuscripcion.findAll", query="SELECT u FROM UsuarioSuscripcion u")
 public class UsuarioSuscripcion implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@EmbeddedId
-	private UsuarioSuscripcionPK id;
+	
+	
+	@Id
+	@Column(name = "id_usuario")
+	private String idUsuario;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "estado", nullable = false)
@@ -49,10 +56,10 @@ public class UsuarioSuscripcion implements Serializable {
 	@Column(name="precio", nullable = false, precision = 10, scale = 2)
 	private BigDecimal precio;
 
-	//bi-directional many-to-one association to Usuario
-	@ManyToOne
-	@JoinColumn(name="id_usuario")
+	@OneToOne
+	@JoinColumn(name = "id_usuario", insertable = false, updatable = false)
 	private Usuario usuario;
+
 
 
 }

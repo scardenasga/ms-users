@@ -1,7 +1,9 @@
-package co.edu.unbosque.ms_users.model;
+package co.edu.unbosque.ms_users.model.entity;
 
 import java.io.Serializable;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 /**
@@ -21,6 +24,7 @@ import lombok.Data;
  * 
  */
 @Data
+@NoArgsConstructor
 @Entity
 @NamedQuery(name="Rol.findAll", query="SELECT r FROM Rol r")
 public class Rol implements Serializable {
@@ -36,7 +40,8 @@ public class Rol implements Serializable {
 	private TipoRol nombre;
 
 	//bi-directional many-to-one association to Usuario
-	@OneToMany(mappedBy="rol", fetch = FetchType.EAGER)
+	@JsonIgnore
+	@OneToMany(mappedBy="rol", fetch = FetchType.LAZY)
 	private List<Usuario> usuarios;
 
 }
