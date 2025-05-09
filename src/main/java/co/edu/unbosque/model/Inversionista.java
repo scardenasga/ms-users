@@ -2,7 +2,7 @@ package co.edu.unbosque.model;
 
 import java.math.BigDecimal;
 
-
+import co.edu.unbosque.model.entity.Usuario;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación de pago exitoso</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+<table class="container" cellspacing="0" cellpadding="0" align="center">
+    <tr>
+        <td class="header">
+            <img src="https://cdn.pixabay.com/photo/2023/11/22/04/35/sakd-8404690_1280.png" alt="Logotipo de Juzgados SAKD">
+        </td>
+    </tr>
+    <tr>
+        <td class="title">
+            Confirmación de pago exitoso
+        </td>
+    </tr>
+    <tr>
+        <td class="content">
+            <p>Hola <strong>${username}</strong>,</p>
+
+            <p>Nos complace informarte que tu <strong>suscripción ${tipoSuscripcion}</strong> ha sido activada exitosamente.</p>
+
+            <p>Detalles del pago:</p>
+            <ul>
+                <li><strong>Tipo de suscripción:</strong> ${tipoSuscripcion} (Premium)</li>
+                <li><strong>Valor pagado:</strong> $${valorPago}</li>
+                <li><strong>Fecha de pago:</strong> ${fechaPago}</li>
+                
+            </ul>
+
+            <p>Gracias por confiar en nosotros. Estamos comprometidos con tu crecimiento financiero.</p>
+
+            <p class="firma">~ Equipo Acciones El Bosque</p>
+        </td>
+    </tr>
+    <tr>
+        <td class="footer">
+            Este es un correo automático, por favor no respondas a esta dirección. Si tienes preguntas, contáctanos en
+            <a href="mailto:soporte@accioneselbosque.com">soporte@accioneselbosque.com</a>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>
