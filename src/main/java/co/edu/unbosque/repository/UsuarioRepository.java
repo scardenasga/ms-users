@@ -1,8 +1,8 @@
 package co.edu.unbosque.repository;
 
-import co.edu.unbosque.model.Usuario;
-
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import co.edu.unbosque.model.entity.Usuario;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, String> {
 

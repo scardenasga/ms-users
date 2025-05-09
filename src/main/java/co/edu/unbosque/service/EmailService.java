@@ -20,9 +20,9 @@ public class EmailService {
 
     private static final String remitente = "grupoaccioneselbosque@gmail.com";
     private static final String password = "mrktnwdshnmkukhc";
-    private static Session sesion;
+    public static Session sesion;
 
-    private static Session getSession() {
+    public static Session getSession() {
         if (sesion == null) {
         	Properties prop = new Properties();
         	prop.put("mail.smtp.host", "smtp.gmail.com");  // El host del servidor SMTP
@@ -40,7 +40,11 @@ public class EmailService {
         return sesion;
     }
 
-    public static void enviarCorreo(String codigo, String destinatario, String identification) {
+    public static String getRemitente() {
+        return remitente;
+    }
+
+    public static void enviarCorreo(String codigo, String destinatario) {
         System.out.println("INICIO DE ENVÍO DE CORREO");
         System.out.println("Código: " + codigo);
         System.out.println("Destinatario: " + destinatario);

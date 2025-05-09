@@ -1,22 +1,27 @@
 package co.edu.unbosque.service;
 
 
-import co.edu.unbosque.model.Usuario;
-
-
-import co.edu.unbosque.model.UsuarioDTO;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import co.edu.unbosque.model.entity.EstadoSuscripcion;
+import co.edu.unbosque.model.entity.Usuario;
+import co.edu.unbosque.model.entity.UsuarioSuscripcion;
+import co.edu.unbosque.model.request.SuscripcionRequest;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import co.edu.unbosque.repository.UsuarioRepository;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.checkout.Session;
+import com.stripe.param.checkout.SessionCreateParams;
+
 
 @Service
 public class UsuarioService {
@@ -26,8 +31,14 @@ public class UsuarioService {
 
 	private Map<String, String> codigosPorCorreo;
 
-	@Value("${jwt.secret}")
-	private String SECRET_KEY;
+
+	@Value("${stripe.secret-key}")
+    private String stripeSecretKey;
+
+    @PostConstruct
+    public void init() {
+        Stripe.apiKey = stripeSecretKey; 
+    }
 
 	public UsuarioService() {
 		codigosPorCorreo = new HashMap<>();
@@ -48,23 +59,8 @@ public class UsuarioService {
 	public boolean existeEmail(String email) {
 		return userRepo.existsByEmail(email);
 	}
+
 	
-	public UsuarioDTO buscarPorCorreo(String correo) {
-	    Usuario usuario = userRepo.findByEmail(correo);
-	    if (usuario == null) return null;
-
-	    UsuarioDTO dto = new UsuarioDTO();
-	    dto.setEmail(usuario.getEmail());
-	    dto.setContrasena(usuario.getContrasena());
-
-	    return dto;
-	}
-
-	public String generarToken(UsuarioDTO usuario) {
-		return Jwts.builder().setSubject(usuario.getEmail()).setIssuedAt(new Date())
-				.setExpiration(new Date(System.currentTimeMillis() + 20 * 60 * 1000))
-				.signWith(SignatureAlgorithm.HS512, SECRET_KEY).compact();
-	}
 	
 	
 	public void eliminarCuenta(String email) {
@@ -75,4 +71,44 @@ public class UsuarioService {
 	        throw new EntityNotFoundException("El usuario con email " + email + " no existe.");
 	    }
 	}
+
+	public String createCheckoutSession(String priceId) throws StripeException {
+        SessionCreateParams params = SessionCreateParams.builder()
+            .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
+            .setSuccessUrl("http://localhost:3000/Registration")
+            .setCancelUrl("http://localhost:3000/cancel")
+            .addLineItem(
+                SessionCreateParams.LineItem.builder()
+                    .setPrice(priceId)
+                    .setQuantity(1L)
+                    .build()
+            )
+            .build();
+
+        Session session = Session.create(params);
+        return session.getUrl(); 
+    }
+
+	 public void agregarActulizarSuscripcion(SuscripcionRequest request) {
+
+        // 1. Buscar si el usuario ya tiene un registro en usuario_suscripcion usando su ID
+        Usuario user = userExist(request.getEmail());
+
+        UsuarioSuscripcion nuevaSuscripcion = UsuarioSuscripcion.builder()
+                .idUsuario(request.getEmail())
+                .nombre(request.getNombre())
+                .precio(request.getPrecio())
+                .estado(EstadoSuscripcion.ACTIVA)
+                .fechaFin(LocalDateTime.now().plusMonths(1))
+                .fechaInicio(LocalDateTime.now())
+                .build();
+        user.setSuscripcion(nuevaSuscripcion);
+
+        userRepo.save(user);
+    }
+
+	private Usuario userExist(String email) {
+        return userRepo.findById(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + email));
+    }
 }

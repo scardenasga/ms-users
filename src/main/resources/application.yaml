@@ -1,18 +1,26 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
 
   application:
     name: ms-users
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    show-sql: true
 
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+jwt:
+  secret: accionesElBosque20251
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY}
+  public-key: ${STRIPE_PUBLIC_KEY}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
 
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: true
+
