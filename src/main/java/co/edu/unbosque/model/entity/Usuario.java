@@ -11,7 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
@@ -22,8 +21,6 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import co.edu.unbosque.model.Configuracion;
 
 @Data
 @Builder
@@ -67,10 +64,7 @@ public class Usuario implements Serializable {
 	@Column(name = "fecha_registro")
 	private LocalDateTime fechaRegistro;
 
-	// bi-directional many-to-one association to Rol
-	@ManyToOne
-	@JoinColumn(name = "id_rol")
-	private Rol rol;
+
 
 	// bi-directional one-to-one association to Configuracion
 	@OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)

@@ -1,36 +1,36 @@
 package co.edu.unbosque.controller;
 
-import co.edu.unbosque.model.entity.EstadoSuscripcion;
-
-import co.edu.unbosque.model.request.SuscripcionRequest;
+import co.edu.unbosque.model.Response.UsuarioResponse;
+import co.edu.unbosque.model.entity.Usuario;
+import co.edu.unbosque.model.request.EmailRequest;
+import co.edu.unbosque.model.request.UsuarioRequest;
+import org.springframework.http.MediaType;
 import co.edu.unbosque.service.EmailService;
+
+import com.stripe.model.checkout.Session;
+import co.edu.unbosque.service.SuscripcionService;
 import co.edu.unbosque.service.UsuarioService;
 
-import java.math.BigDecimal;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Value;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import com.stripe.net.Webhook;
-import com.stripe.exception.StripeException;
+import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
 import com.stripe.model.StripeObject;
-import com.stripe.model.checkout.Session;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("/usuario")
 @CrossOrigin(origins = { "http://localhost:8080", "http://localhost:8081", "http://localhost:3000" })
 @Transactional
 public class UsuarioController {
@@ -38,6 +38,9 @@ public class UsuarioController {
 	private UsuarioService userServ;
 	@Autowired
 	private EmailService emServ;
+
+	@Autowired
+	private SuscripcionService susServ;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -48,16 +51,21 @@ public class UsuarioController {
 	}
 
 	@PostMapping(path = "/enviarcorreo", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<String> enviarcorreo(@RequestBody String email) {
+	public ResponseEntity<String> enviarcorreo(@RequestBody EmailRequest user) {
 
-		if (!userServ.existeEmail(email)) {
+		Usuario usuario = userServ.findByEmail(user.getEmail());
+
+		if (usuario == null) {
 			return new ResponseEntity<>("Correo no registrado", HttpStatus.NOT_FOUND);
+		}
+		if (!userServ.isValidPassword(user.getPassword(), usuario.getContrasena())) {
+			return new ResponseEntity<>("Contraseña incorrecta", HttpStatus.UNAUTHORIZED);
 		}
 
 		String codigo2 = emServ.generarCodigo();
 		System.out.println("este es el codigo" + codigo2);
-		userServ.guardarCodigo(email, codigo2);
-		emServ.enviarCorreo(codigo2, email);
+		userServ.guardarCodigo(user.getEmail(), codigo2);
+		emServ.enviarCorreo(codigo2, user.getEmail());
 
 		return new ResponseEntity<>("Código enviado al correo", HttpStatus.OK);
 
@@ -77,6 +85,23 @@ public class UsuarioController {
 
 	}
 
+	@GetMapping(path = "/listar")
+	public ResponseEntity<UsuarioResponse> listarUsuario(
+			@RequestParam String email) {
+		UsuarioResponse user = userServ.listarUsuario(email);
+		return ResponseEntity.ok(user);
+	}
+
+	@PostMapping(path = "/crear")
+	public ResponseEntity<String> crearUsuario(@RequestBody UsuarioRequest usuarioRequest) {
+		try {
+			userServ.crearUsuario(usuarioRequest);
+			return ResponseEntity.ok("Usuario creado exitosamente");
+		} catch (Exception e) {
+			return ResponseEntity.status(500).body("Error al crear el usuario: " + e.getMessage());
+		}
+	}
+
 	@DeleteMapping(path = "/eliminarUsuario/{email}")
 	public ResponseEntity<String> eliminarUsuario(
 			@PathVariable String email) {
@@ -91,9 +116,11 @@ public class UsuarioController {
 	}
 
 	@PostMapping(path = "/crearSuscripcion")
-	public ResponseEntity<Map<String, String>> crearSuscripcion(@RequestParam String plan) {
+	public ResponseEntity<Map<String, String>> crearSuscripcion(@RequestBody Map<String, String> body) {
 		try {
+			String plan = body.get("plan");
 			String priceId;
+
 			if (plan.equalsIgnoreCase("mensual")) {
 				priceId = "price_1RJztMCBAIXMM3MqZqewby7R";
 			} else if (plan.equalsIgnoreCase("anual")) {
@@ -112,86 +139,60 @@ public class UsuarioController {
 		}
 	}
 
-	@PostMapping("/webhookStripe")
+	@PostMapping(value = "/webhookStripe", consumes = "application/json")
 	public ResponseEntity<String> stripeWebhook(@RequestBody String payload,
 			@RequestHeader("Stripe-Signature") String sigHeader) {
 
 		try {
-
 			if (webhookSecret == null || webhookSecret.isBlank()) {
-
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 						.body("Error de configuración: webhookSecret no definido");
 			}
-
 			Event event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
-
 			if ("checkout.session.completed".equals(event.getType())) {
 
-				Optional<Session> sessionOptional = Optional.ofNullable((Session) event.getData().getObject());
-				if (!sessionOptional.isPresent()) {
+				StripeObject stripeObject = event.getData().getObject();
 
-					return ResponseEntity.badRequest().body("Datos de sesión inválidos");
-				}
+				if (stripeObject instanceof Session) {
+					Session session = (Session) stripeObject;
 
-				Session session = sessionOptional.get();
+					if (session.getCustomerDetails() == null) {
+						LOG.severe("CustomerDetails es null");
+					}
+					if (session.getAmountTotal() == null) {
+						LOG.severe("AmountTotal es null");
+					} else {
+						LOG.info("Monto total recibido: " + session.getAmountTotal());
+					}
 
-				if (session.getCustomerDetails() == null) {
+					if (session.getCustomerDetails() == null || session.getAmountTotal() == null
+							|| session.getAmountTotal() <= 0) {
+						return ResponseEntity.badRequest().body("Datos de sesión incompletos o inválidos");
+					}
+					susServ.procesarEventoStripe(session);
 
-					return ResponseEntity.badRequest().body("CustomerDetails no proporcionado");
-				}
-
-				String customerEmail = session.getCustomerDetails().getEmail();
-
-				Long amountTotal = session.getAmountTotal();
-				if (amountTotal == null || amountTotal <= 0) {
-
-					return ResponseEntity.badRequest().body("Monto de pago no válido");
-				}
-
-				BigDecimal precio = new BigDecimal(amountTotal / 100.0);
-				String tipoSuscripcion;
-				if (precio.compareTo(BigDecimal.valueOf(12)) == 0) {
-					tipoSuscripcion = "mensual";
-				} else if (precio.compareTo(BigDecimal.valueOf(1200)) == 0) {
-					tipoSuscripcion = "anual";
+					return ResponseEntity.ok("Webhook procesado correctamente");
 				} else {
-					return ResponseEntity.badRequest().body("Monto no corresponde a una suscripción válida");
-				}
-
-				SuscripcionRequest suscripcionRequest = SuscripcionRequest.builder()
-						.email(customerEmail)
-						.nombre(tipoSuscripcion)
-						.precio(new BigDecimal(amountTotal / 100.0))
-						.estado(EstadoSuscripcion.ACTIVA)
-						.build();
-
-				try {
-					userServ.agregarActulizarSuscripcion(suscripcionRequest);
-
-				} catch (Exception serviceEx) {
-
-					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-							"Error al procesar suscripción", serviceEx);
+					return ResponseEntity.badRequest().body("El objeto recibido no es una sesión de checkout");
 				}
 			} else {
-				LOG.info("Evento no manejado: " + event.getType());
+				return ResponseEntity.ok("Evento no relevante, pero recibido");
 			}
 
-			return ResponseEntity.ok("Webhook procesado correctamente");
-
-		} catch (StripeException e) {
-
+		} catch (SignatureVerificationException e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-					.body("Error de validación Stripe: " + e.getMessage());
-		} catch (NullPointerException e) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-					.body("Datos incompletos en el payload");
+					.body("Firma inválida de Stripe");
 		} catch (Exception e) {
-
+			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body("Error interno del servidor");
 		}
 	}
+
+	@GetMapping(path = "/buscarSuscripcion/{idUsuario}")
+	public ResponseEntity<Boolean> verificarSuscripcion(@PathVariable String idUsuario) {
+		boolean tieneSuscripcion = userServ.obtenerSuscripcion(idUsuario);
+		return ResponseEntity.ok(tieneSuscripcion);
+	}
+
 }
