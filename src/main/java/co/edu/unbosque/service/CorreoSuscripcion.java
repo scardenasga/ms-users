@@ -36,7 +36,7 @@ public class CorreoSuscripcion implements StrategyEmail{
             mensaje.setFrom(new InternetAddress(EmailService.getRemitente()));
             mensaje.addRecipient(Message.RecipientType.TO, new InternetAddress(destinatario));
             mensaje.setSubject("¡Gracias por tu suscripción!");
-            String contenido = new String(Files.readAllBytes(Paths.get("src/main/resources/templates/pagos.xhtml")));
+            String contenido = new String(Files.readAllBytes(Paths.get("src/main/webapp/pagos.xhtml")));
 
             contenido = contenido
                     .replace("${nombre}", nombre)

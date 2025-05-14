@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Confirmación de pago exitoso</title>
-    <link rel="stylesheet" href="estilos.css">
+    <link rel="stylesheet" href="styles/estilos.css">
 </head>
 <body>
 
@@ -20,27 +20,21 @@
     </tr>
     <tr>
         <td class="content">
-            <p>Hola <strong>${username}</strong>,</p>
+            <p>Hola <strong>${nombre}</strong>,</p>
 
-            <p>Nos complace informarte que tu <strong>suscripción ${tipoSuscripcion}</strong> ha sido activada exitosamente.</p>
+            <p>Nos complace informarte que tu <strong>suscripción ${tipo}</strong> ha sido activada exitosamente.</p>
 
             <p>Detalles del pago:</p>
             <ul>
-                <li><strong>Tipo de suscripción:</strong> ${tipoSuscripcion} (Premium)</li>
-                <li><strong>Valor pagado:</strong> $${valorPago}</li>
-                <li><strong>Fecha de pago:</strong> ${fechaPago}</li>
+                <li><strong>Tipo de suscripción:</strong> ${tipo} </li>
+                <li><strong>Valor pagado:</strong> ${precio} USD</li>
+                <li><strong>Fecha de pago:</strong> ${fecha}</li>
                 
             </ul>
 
             <p>Gracias por confiar en nosotros. Estamos comprometidos con tu crecimiento financiero.</p>
 
             <p class="firma">~ Equipo Acciones El Bosque</p>
-        </td>
-    </tr>
-    <tr>
-        <td class="footer">
-            Este es un correo automático, por favor no respondas a esta dirección. Si tienes preguntas, contáctanos en
-            <a href="mailto:soporte@accioneselbosque.com">soporte@accioneselbosque.com</a>
         </td>
     </tr>
 </table>
