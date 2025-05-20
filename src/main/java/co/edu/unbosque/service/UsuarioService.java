@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -71,6 +72,11 @@ public class UsuarioService {
         return userRepo.findByEmail(email);
     }
 
+     public Optional<BigDecimal> findBySaldo(String email) {
+    Optional<BigDecimal> saldo = userRepo.findSaldoByEmail(email);
+    saldo.ifPresent(s -> System.out.println("Saldo encontrado: " + s));
+    return saldo;
+}
     public UsuarioResponse listarUsuario(String email) {
         Usuario response = userRepo.findByEmail(email);
         return toResponse(response);
@@ -123,6 +129,17 @@ public class UsuarioService {
         user.setSuscripcion(nuevaSuscripcion);
 
         userRepo.save(user);
+    }
+
+    public void recargarSaldo(String email, BigDecimal monto) {
+        Usuario usuario = userRepo.findByEmail(email);
+        if (usuario == null) {
+            throw new IllegalArgumentException("Usuario no encontrado con email: " + email);
+        }
+
+        BigDecimal saldoActual = usuario.getSaldo();
+        usuario.setSaldo(saldoActual.add(monto));
+        userRepo.save(usuario);
     }
 
     private Usuario userExist(String email) {

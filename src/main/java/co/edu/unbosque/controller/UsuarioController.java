@@ -8,10 +8,12 @@ import org.springframework.http.MediaType;
 import co.edu.unbosque.service.EmailService;
 
 import com.stripe.model.checkout.Session;
-import co.edu.unbosque.service.SuscripcionService;
+import co.edu.unbosque.service.PagoService;
 import co.edu.unbosque.service.UsuarioService;
 
+import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import com.stripe.net.Webhook;
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.StripeObject;
 
@@ -40,7 +43,7 @@ public class UsuarioController {
 	private EmailService emServ;
 
 	@Autowired
-	private SuscripcionService susServ;
+	private PagoService susServ;
 
 	@Value("${stripe.webhook-secret}")
 	private String webhookSecret;
@@ -139,6 +142,19 @@ public class UsuarioController {
 		}
 	}
 
+	@PostMapping(path = "/crearPago")
+	public ResponseEntity<Map<String, String>> crearPago(@RequestBody Map<String, String> body) {
+		try {
+			String email = body.get("email").toString();
+			BigDecimal monto = new BigDecimal(body.get("monto").toString());
+			Session session = susServ.recargarFondos(email, monto);
+			return ResponseEntity.ok(Map.of("url", session.getUrl()));
+		} catch (StripeException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of("error", "Error creando sesión de Stripe: " + e.getMessage()));
+		}
+	}
+
 	@PostMapping(value = "/webhookStripe", consumes = "application/json")
 	public ResponseEntity<String> stripeWebhook(@RequestBody String payload,
 			@RequestHeader("Stripe-Signature") String sigHeader) {
@@ -194,5 +210,12 @@ public class UsuarioController {
 		boolean tieneSuscripcion = userServ.obtenerSuscripcion(idUsuario);
 		return ResponseEntity.ok(tieneSuscripcion);
 	}
+@GetMapping(path = "/enviarSaldo/{idUsuario}")
+public ResponseEntity<?> enviarSaldo(@PathVariable String idUsuario) {
+    return userServ.findBySaldo(idUsuario)
+            .<ResponseEntity<?>>map(saldo -> ResponseEntity.ok(Map.of("saldo", saldo)))
+            .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Usuario no encontrado")));
+}
 
 }
