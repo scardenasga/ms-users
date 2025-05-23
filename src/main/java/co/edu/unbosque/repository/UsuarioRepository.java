@@ -18,7 +18,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
     public Usuario findByEmail(String email);
    @Query("SELECT u.saldo FROM Usuario u WHERE u.email = :email")
     Optional<BigDecimal> findSaldoByEmail(@Param("email") String email);
-
     
     public void deleteByEmail(String email);
 }

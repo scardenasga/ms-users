@@ -52,8 +52,9 @@ public class UsuarioSuscripcion implements Serializable {
 	private BigDecimal precio;
 
 	@OneToOne
-	@JoinColumn(name = "id_usuario", insertable = false, updatable = false)
-	private Usuario usuario;
+@JoinColumn(name = "id_usuario")
+private Usuario usuario;
+
 
 
 

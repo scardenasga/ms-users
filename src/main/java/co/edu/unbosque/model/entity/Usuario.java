@@ -67,8 +67,9 @@ public class Usuario implements Serializable {
 
 
 	// bi-directional one-to-one association to Configuracion
-	@OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
-	private Configuracion configuracion;
+	@OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+private Configuracion configuracion;
+
 
 	// bi-directional many-to-many association to Usuario
 	@ManyToMany
@@ -83,7 +84,8 @@ public class Usuario implements Serializable {
 	@ManyToMany(mappedBy = "usuarios1", fetch = FetchType.LAZY)
 	private List<Usuario> usuarios2;
 
-	@OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private UsuarioSuscripcion suscripcion;
+	@OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+private UsuarioSuscripcion suscripcion;
+
 
 }

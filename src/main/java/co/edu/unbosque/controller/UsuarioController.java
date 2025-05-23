@@ -1,9 +1,12 @@
 package co.edu.unbosque.controller;
 
 import co.edu.unbosque.model.Response.UsuarioResponse;
+import co.edu.unbosque.model.entity.Moneda;
 import co.edu.unbosque.model.entity.Usuario;
 import co.edu.unbosque.model.request.EmailRequest;
 import co.edu.unbosque.model.request.UsuarioRequest;
+import co.edu.unbosque.model.request.UsuarioUpdate;
+
 import org.springframework.http.MediaType;
 import co.edu.unbosque.service.EmailService;
 
@@ -217,5 +220,31 @@ public ResponseEntity<?> enviarSaldo(@PathVariable String idUsuario) {
             .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "Usuario no encontrado")));
 }
+
+@GetMapping(path = "/enviarMoneda/{idUsuario}")
+public ResponseEntity<?> enviarMoneda(@PathVariable String idUsuario) {
+    Moneda moneda = userServ.findByMoneda(idUsuario);
+    
+    if (moneda != null) {
+        return ResponseEntity.ok(Map.of("moneda", moneda.name()));
+    } else {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "Usuario no encontrado"));
+    }
+}
+
+  @PutMapping("/actualizar/{email}") 
+    public ResponseEntity<String> actualizarUsuario(@PathVariable String email,
+            @RequestBody UsuarioUpdate usuarioRequest) {
+        try {
+            userServ.actualizarUsuario(email, usuarioRequest);
+            return ResponseEntity.ok("Usuario actualizado exitosamente");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error al actualizar informacion del usuario: " + e.getMessage());
+        }
+    }
+	
+
+
 
 }

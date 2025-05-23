@@ -4,12 +4,15 @@ import co.edu.unbosque.model.Response.UsuarioResponse;
 import co.edu.unbosque.model.Response.UsuarioResponse.ConfiguracionDTO;
 import co.edu.unbosque.model.entity.Configuracion;
 import co.edu.unbosque.model.entity.EstadoSuscripcion;
+import co.edu.unbosque.model.entity.Moneda;
 import co.edu.unbosque.model.entity.Usuario;
 import co.edu.unbosque.model.entity.UsuarioSuscripcion;
 import co.edu.unbosque.model.request.SuscripcionRequest;
 import co.edu.unbosque.model.request.UsuarioRequest;
+import co.edu.unbosque.model.request.UsuarioUpdate;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
+import co.edu.unbosque.repository.ConfiguracionRepository;
 import co.edu.unbosque.repository.UsuarioRepository;
 import co.edu.unbosque.repository.UsuarioSuscripcionRepository;
 
@@ -41,6 +44,9 @@ public class UsuarioService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public ConfiguracionRepository conRepo;
 
     private Map<String, String> codigosPorCorreo;
 
@@ -77,6 +83,15 @@ public class UsuarioService {
     saldo.ifPresent(s -> System.out.println("Saldo encontrado: " + s));
     return saldo;
 }
+
+
+     public Moneda findByMoneda(String email) {
+       Configuracion configuracion = conRepo.findByIdUsuario(email);
+        if (configuracion != null) {
+            return configuracion.getMonedaBase();
+        }
+        return Moneda.USD; 
+    }
     public UsuarioResponse listarUsuario(String email) {
         Usuario response = userRepo.findByEmail(email);
         return toResponse(response);
@@ -195,6 +210,33 @@ public class UsuarioService {
 
     public boolean obtenerSuscripcion(String idUsuario) {
         return userSusRepo.existsById(idUsuario);
+    }
+
+    public Configuracion obteneConfiguracion(String idUsuario){
+        return conRepo.findByIdUsuario(idUsuario);
+    }
+    
+      public void actualizarUsuario(String idUsuario, UsuarioUpdate updateRequest) {
+        Usuario usuario = userRepo.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + idUsuario));
+
+        if (updateRequest.getPrimerNombre() != null) {
+            usuario.setPrimerNombre(updateRequest.getPrimerNombre());
+        }
+        if (updateRequest.getSegundoNombre() != null) {
+            usuario.setSegundoNombre(updateRequest.getSegundoNombre());
+        }
+        if (updateRequest.getPrimerApellido() != null) {
+            usuario.setPrimerApellido(updateRequest.getPrimerApellido());
+        }
+        if (updateRequest.getSegundoApellido() != null) {
+            usuario.setSegundoApellido(updateRequest.getSegundoApellido());
+        }
+        if (updateRequest.getTelefono() != null) {
+            usuario.setTelefono(updateRequest.getTelefono());
+        }
+
+        userRepo.save(usuario);
     }
 
 }
