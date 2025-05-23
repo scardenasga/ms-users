@@ -1,4 +1,5 @@
 package co.edu.unbosque.model.entity;
+
 import java.io.Serializable;
 
 import jakarta.persistence.CascadeType;
@@ -64,10 +65,8 @@ public class Usuario implements Serializable {
 	@Column(name = "fecha_registro")
 	private LocalDateTime fechaRegistro;
 
-
-
 	// bi-directional one-to-one association to Configuracion
-	@OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
+	@OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Configuracion configuracion;
 
 	// bi-directional many-to-many association to Usuario
@@ -83,7 +82,7 @@ public class Usuario implements Serializable {
 	@ManyToMany(mappedBy = "usuarios1", fetch = FetchType.LAZY)
 	private List<Usuario> usuarios2;
 
-	@OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private UsuarioSuscripcion suscripcion;
 
 }

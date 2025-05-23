@@ -94,7 +94,7 @@ private String exchangeApiKey;
         String monedaStripe = moneda.toString().toLowerCase();
 
         Map<String, Object> metadata = new HashMap<>();
-        metadata.put("tipo_operacion", "recarga");
+        metadata.put("tipoOperacion", "recarga");
         metadata.put("usuario_id", email);
         metadata.put("moneda", moneda);
         SessionCreateParams params = SessionCreateParams.builder()
