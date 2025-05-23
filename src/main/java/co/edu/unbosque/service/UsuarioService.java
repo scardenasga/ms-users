@@ -10,19 +10,21 @@ import co.edu.unbosque.model.entity.UsuarioSuscripcion;
 import co.edu.unbosque.model.request.SuscripcionRequest;
 import co.edu.unbosque.model.request.UsuarioRequest;
 import co.edu.unbosque.model.request.UsuarioUpdate;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import co.edu.unbosque.repository.ConfiguracionRepository;
 import co.edu.unbosque.repository.UsuarioRepository;
 import co.edu.unbosque.repository.UsuarioSuscripcionRepository;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +46,7 @@ public class UsuarioService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
 
     @Autowired
     public ConfiguracionRepository conRepo;
@@ -238,5 +241,4 @@ public class UsuarioService {
 
         userRepo.save(usuario);
     }
-
 }

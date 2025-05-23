@@ -10,7 +10,10 @@ body {
     background-color: #F2F3F4;
     margin: 0 auto;
     border-collapse: collapse;
+<<<<<<< HEAD
     border-radius: 12px;
+=======
+>>>>>>> origin/main
 }
 
 .header {

@@ -1,4 +1,4 @@
-package co.edu.unbosque.model.entity;
+package co.edu.unbosque.ms_users.model.entity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -18,6 +18,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
+/**
+ * The persistent class for the usuario_suscripcion database table.
+ * 
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -52,7 +57,6 @@ public class UsuarioSuscripcion implements Serializable {
 	private BigDecimal precio;
 
 	@OneToOne
-
 	@JoinColumn(name = "id_usuario", insertable = false, updatable = false)
 	private Usuario usuario;
 

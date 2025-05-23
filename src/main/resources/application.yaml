@@ -1,6 +1,11 @@
+
+server:
+  port: 8081
+
 spring:
+
   application:
-    name: ms-users-main
+    name: ms-users
   jpa:
     hibernate:
       ddl-auto: update
@@ -10,8 +15,6 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
-server:
-  port: 8081
 jwt:
   secret: accionesElBosque20251
 stripe:
@@ -21,6 +24,5 @@ stripe:
 exchange:
   api:
     key: ${EXCHANGE_API_KEY}
-
 
 

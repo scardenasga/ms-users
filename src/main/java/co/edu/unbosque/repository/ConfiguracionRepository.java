@@ -9,5 +9,4 @@ import co.edu.unbosque.model.entity.Configuracion;
 public interface ConfiguracionRepository extends JpaRepository<Configuracion, String>{
 
     Configuracion findByIdUsuario(String idUsuario); 
-    
 }
